@@ -1,0 +1,115 @@
+{
+  "name": "NestCare — Tenant Issue Reporter",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nestcare-report",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "nestcare-report"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ received: true }) }}",
+        "options": {}
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.contactType }}",
+              "operation": "equals",
+              "value2": "whatsapp"
+            }
+          ]
+        }
+      },
+      "id": "if-contact-type",
+      "name": "WhatsApp or Email?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "accountSid": "={{ $credentials.twilioApi.accountSid }}",
+        "from": "whatsapp:+14155238886",
+        "to": "=whatsapp:{{ $json.body.contact }}",
+        "message": "=Hi {{ $json.body.firstName }}! 🏠\n\nWe've received your maintenance report:\n\n*Issue:* {{ $json.body.issue }}\n*Reference:* {{ $json.body.refNumber }}\n\nOur property manager has been notified and will get back to you within 24 hours.\n\nThank you for letting us know!\n— The NestCare Team"
+      },
+      "id": "send-whatsapp",
+      "name": "Send WhatsApp",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [900, 180],
+      "credentials": {
+        "twilioApi": { "id": "twilio-creds", "name": "Twilio" }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-reply@nestcare.app",
+        "toEmail": "={{ $json.body.contact }}",
+        "subject": "=We've received your report, {{ $json.body.firstName }} — {{ $json.body.refNumber }}",
+        "emailType": "html",
+        "message": "=<!DOCTYPE html><html><body style=\"font-family: 'DM Sans', Arial, sans-serif; background: #faf9f7; margin: 0; padding: 40px 20px;\"><div style=\"max-width: 520px; margin: 0 auto; background: white; border-radius: 16px; padding: 40px; border: 1px solid #e8e5df;\"><div style=\"margin-bottom: 32px;\"><div style=\"width: 40px; height: 40px; background: #c8602a; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;\"><span style=\"color: white; font-size: 18px;\">🏠</span></div><h1 style=\"font-size: 24px; color: #1a1814; margin: 0 0 8px; font-weight: 600;\">Hi {{ $json.body.firstName }},</h1><p style=\"color: #4a4740; font-size: 15px; line-height: 1.6; margin: 0;\">We've received your maintenance request and your property manager has been notified.</p></div><div style=\"background: #f2f0ec; border-radius: 12px; padding: 20px; margin-bottom: 28px;\"><div style=\"margin-bottom: 12px;\"><span style=\"font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: #8a8780; font-weight: 500;\">Issue reported</span><p style=\"margin: 4px 0 0; font-size: 16px; font-weight: 500; color: #1a1814;\">{{ $json.body.issue }}</p></div>{{ $json.body.description ? '<div style=\"margin-bottom: 12px;\"><span style=\"font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: #8a8780; font-weight: 500;\">Description</span><p style=\"margin: 4px 0 0; font-size: 14px; color: #4a4740; line-height: 1.5;\">' + $json.body.description + '</p></div>' : '' }}<div><span style=\"font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: #8a8780; font-weight: 500;\">Reference</span><p style=\"margin: 4px 0 0; font-size: 14px; font-weight: 500; color: #1a1814; font-family: monospace;\">{{ $json.body.refNumber }}</p></div></div><p style=\"color: #8a8780; font-size: 13px; line-height: 1.6; margin: 0;\">Expected response within 24 hours. Keep this reference number for follow-ups.</p><hr style=\"border: none; border-top: 1px solid #e8e5df; margin: 24px 0;\"/><p style=\"color: #8a8780; font-size: 12px; margin: 0;\">— The NestCare Team</p></div></body></html>"
+      },
+      "id": "send-email",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [900, 420],
+      "credentials": {
+        "gmailOAuth2": { "id": "gmail-creds", "name": "Gmail" }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "notifications@nestcare.app",
+        "toEmail": "YOUR_LANDLORD_EMAIL@example.com",
+        "subject": "=🔧 New issue report — {{ $json.body.issue }} ({{ $json.body.refNumber }})",
+        "emailType": "html",
+        "message": "=<!DOCTYPE html><html><body style=\"font-family: Arial, sans-serif; background: #f5f5f5; padding: 32px 20px;\"><div style=\"max-width: 480px; margin: 0 auto; background: white; border-radius: 12px; padding: 32px; border: 1px solid #e0e0e0;\"><h2 style=\"margin: 0 0 20px; font-size: 20px; color: #1a1814;\">New Maintenance Request</h2><table style=\"width: 100%; font-size: 14px; color: #333;\"><tr><td style=\"padding: 8px 0; color: #888; width: 120px;\">Tenant</td><td style=\"font-weight: 600;\">{{ $json.body.name }}</td></tr><tr><td style=\"padding: 8px 0; color: #888;\">Issue</td><td style=\"font-weight: 600;\">{{ $json.body.issue }}</td></tr><tr><td style=\"padding: 8px 0; color: #888;\">Contact</td><td>{{ $json.body.contact }} ({{ $json.body.contactType }})</td></tr><tr><td style=\"padding: 8px 0; color: #888;\">Description</td><td>{{ $json.body.description || '—' }}</td></tr><tr><td style=\"padding: 8px 0; color: #888;\">Reference</td><td style=\"font-family: monospace;\">{{ $json.body.refNumber }}</td></tr><tr><td style=\"padding: 8px 0; color: #888;\">Submitted</td><td>{{ $json.body.submittedAt }}</td></tr></table></div></body></html>"
+      },
+      "id": "notify-landlord",
+      "name": "Notify Landlord",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [1120, 300],
+      "credentials": {
+        "gmailOAuth2": { "id": "gmail-creds", "name": "Gmail" }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }, { "node": "WhatsApp or Email?", "type": "main", "index": 0 }]]
+    },
+    "WhatsApp or Email?": {
+      "main": [
+        [{ "node": "Send WhatsApp", "type": "main", "index": 0 }],
+        [{ "node": "Send Email", "type": "main", "index": 0 }]
+      ]
+    },
+    "Send WhatsApp": { "main": [[{ "node": "Notify Landlord", "type": "main", "index": 0 }]] },
+    "Send Email": { "main": [[{ "node": "Notify Landlord", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "versionId": "1"
+}

@@ -1,0 +1,14 @@
+# Mac system files
+.DS_Store
+**/.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Next.js
+.next/
+node_modules/
+.env.local
