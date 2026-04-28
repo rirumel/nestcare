@@ -41,7 +41,7 @@ def detect_anomaly(df: pd.DataFrame) -> bool:
         return False
     
     z_score = (latest - mean) / std
-    return z_score > 2.0
+    return bool(z_score > 2.0), round(float(z_score), 2)
 
 
 def forecast_next_occurrence(df: pd.DataFrame) -> tuple[str | None, float]:
@@ -149,7 +149,7 @@ def run_prediction(db: Session, issue_category: str) -> dict:
     
     return {
         "issue_category": issue_category,
-        "anomaly_detected": anomaly,
+        "anomaly_detected": bool(anomaly),
         "predicted_next_occurrence": predicted_date,
         "confidence_score": confidence,
         "report_count_last_30_days": count_30d,
@@ -209,7 +209,7 @@ def get_kpi_summary(db: Session) -> dict:
     for cat in categories:
         df = get_issue_timeseries(db, cat)
         anomaly, _ = detect_anomaly(df)
-        if anomaly:
+        if bool(anomaly):
             anomaly_count += 1
     last_7 = db.execute(text("""
         SELECT COUNT(*) FROM issue_reports
