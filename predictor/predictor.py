@@ -143,13 +143,16 @@ def run_prediction(db: Session, issue_category: str) -> dict:
     """
     df = get_issue_timeseries(db, issue_category)
     
-    anomaly = detect_anomaly(df)
+    anomaly_result = detect_anomaly(df)
+    is_anomaly = bool(anomaly_result[0])
+    z_score = float(anomaly_result[1])
+
     predicted_date, confidence = forecast_next_occurrence(df)
     count_30d = get_report_count_last_30_days(db, issue_category)
     
     return {
         "issue_category": issue_category,
-        "anomaly_detected": bool(anomaly),
+        "anomaly_detected": bool(anomaly_result),
         "predicted_next_occurrence": predicted_date,
         "confidence_score": confidence,
         "report_count_last_30_days": count_30d,
@@ -208,8 +211,8 @@ def get_kpi_summary(db: Session) -> dict:
     ]
     for cat in categories:
         df = get_issue_timeseries(db, cat)
-        anomaly, _ = detect_anomaly(df)
-        if bool(anomaly):
+        result = detect_anomaly(df)
+        if bool(result[0]):
             anomaly_count += 1
     last_7 = db.execute(text("""
         SELECT COUNT(*) FROM issue_reports
