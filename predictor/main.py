@@ -7,7 +7,7 @@ from typing import Optional
 from datetime import datetime
 import models
 from database import engine, get_db, Base
-from predictor import run_prediction, update_daily_stats
+from predictor import run_prediction, update_daily_stats, get_kpi_summary, get_timeseries_for_chart, get_seasonality, get_issue_timeseries, get_trend
 
 # Create tables if they don't exist
 Base.metadata.create_all(bind=engine)
@@ -24,6 +24,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+CATEGORIES = [
+    "Heating is not functioning",
+    "Window is damaged",
+    "Stove is not working",
+    "Plumbing issue",
+    "Electrical issue",
+    "Other issue"
+]
 
 # ── Pydantic schemas ──────────────────────────────────────────────
 
@@ -100,6 +109,95 @@ def save_report(report: ReportIn, db: Session = Depends(get_db)):
     update_daily_stats(db, report.issue_category)
 
     return db_report
+
+@app.get("/dashboard/kpi")
+def dashboard_kpi(db: Session = Depends(get_db)):
+    """Top-level KPI metrics for dashboard header cards."""
+    return get_kpi_summary(db)
+ 
+@app.get("/dashboard/predictions")
+def dashboard_predictions(db: Session = Depends(get_db)):
+    """Full ML predictions for all categories."""
+    return [run_prediction(db, cat) for cat in CATEGORIES]
+ 
+@app.get("/dashboard/timeseries")
+def dashboard_timeseries(days: int = 90, db: Session = Depends(get_db)):
+    """Daily report counts per category for trend chart."""
+    return get_timeseries_for_chart(db, days)
+ 
+@app.get("/dashboard/category-totals")
+def dashboard_category_totals(db: Session = Depends(get_db)):
+    """Total reports per category for donut chart."""
+    result = db.execute(text("""
+        SELECT issue_category, COUNT(*) as total
+        FROM issue_reports
+        GROUP BY issue_category
+        ORDER BY total DESC
+    """)).fetchall()
+    return [{"category": row[0], "total": int(row[1])} for row in result]
+ 
+@app.get("/dashboard/recent-reports")
+def dashboard_recent_reports(
+    limit: int = 20,
+    offset: int = 0,
+    db: Session = Depends(get_db)
+):
+    """Paginated recent reports for the table."""
+    reports = db.query(models.IssueReport)\
+        .order_by(models.IssueReport.submitted_at.desc())\
+        .offset(offset).limit(limit).all()
+    total = db.query(models.IssueReport).count()
+    return {
+        "total": total,
+        "reports": [
+            {
+                "id": r.id,
+                "ref_number": r.ref_number,
+                "tenant_name": r.tenant_name,
+                "issue_category": r.issue_category,
+                "description": r.description,
+                "contact_type": r.contact_type,
+                "unit_number": r.unit_number,
+                "submitted_at": r.submitted_at.isoformat() if r.submitted_at else None,
+            }
+            for r in reports
+        ]
+    }
+ 
+@app.get("/dashboard/monthly-heatmap")
+def dashboard_monthly_heatmap(db: Session = Depends(get_db)):
+    """Monthly report counts per category for seasonality heatmap."""
+    result = db.execute(text("""
+        SELECT
+            TO_CHAR(submitted_at, 'YYYY-MM') as month,
+            issue_category,
+            COUNT(*) as total
+        FROM issue_reports
+        WHERE submitted_at >= NOW() - INTERVAL '6 months'
+        GROUP BY TO_CHAR(submitted_at, 'YYYY-MM'), issue_category
+        ORDER BY month ASC
+    """)).fetchall()
+    return [
+        {"month": row[0], "category": row[1], "total": int(row[2])}
+        for row in result
+    ]
+ 
+@app.get("/dashboard/weekly-pattern")
+def dashboard_weekly_pattern(db: Session = Depends(get_db)):
+    """Reports by day of week to show weekly patterns."""
+    result = db.execute(text("""
+        SELECT
+            TO_CHAR(submitted_at, 'Day') as day_name,
+            EXTRACT(DOW FROM submitted_at) as day_num,
+            COUNT(*) as total
+        FROM issue_reports
+        GROUP BY day_name, day_num
+        ORDER BY day_num
+    """)).fetchall()
+    return [
+        {"day": row[0].strip(), "day_num": int(row[1]), "total": int(row[2])}
+        for row in result
+    ]
 
 
 @app.get("/predict/{issue_category}")
