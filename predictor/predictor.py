@@ -28,7 +28,7 @@ def detect_anomaly(df: pd.DataFrame) -> bool:
     Flags if the latest value exceeds mean + 2*std (Z-score style).
     """
     if len(df) < 7:
-        return False
+        return (False, 0.0)
     
     rolling_mean = df["report_count"].rolling(window=7).mean()
     rolling_std = df["report_count"].rolling(window=7).std()
@@ -38,7 +38,7 @@ def detect_anomaly(df: pd.DataFrame) -> bool:
     std = rolling_std.iloc[-1]
     
     if pd.isna(std) or std == 0:
-        return False
+        return (False, 0.0)
     
     z_score = (latest - mean) / std
     return bool(z_score > 2.0), round(float(z_score), 2)
