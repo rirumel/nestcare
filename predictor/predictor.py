@@ -206,7 +206,7 @@ def get_kpi_summary(db: Session) -> Dict[str, Any]:
     this_month = int(db.execute(text("""
         SELECT COUNT(*) FROM issue_reports
         WHERE submitted_at >= DATE_TRUNC('month', NOW())
-    """))).scalar()
+    """)).scalar() or 0)
     top_issue_row = db.execute(text("""
         SELECT issue_category, COUNT(*) as cnt
         FROM issue_reports
