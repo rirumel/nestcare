@@ -182,10 +182,10 @@ def update_daily_stats(db: Session, issue_category: str):
 
 def get_timeseries_for_chart(db: Session, days: int = 90) -> List[Dict]:
     """Daily totals across all categories for the trend chart."""
-    query = text("""
+    query = text(f"""
         SELECT stat_date, issue_category, report_count
         FROM daily_stats
-        WHERE stat_date >= NOW() - INTERVAL ':{days} days'
+        WHERE stat_date >= NOW() - INTERVAL '{days} days'
         ORDER BY stat_date ASC
     """.replace(":days", str(days)))
     result = db.execute(query).fetchall()
@@ -202,7 +202,7 @@ def get_kpi_summary(db: Session) -> Dict[str, Any]:
         "Stove is not working", "Plumbing issue",
         "Electrical issue", "Other issue"
     ]
-    total = int(db.execute(text("SELECT COUNT(*) FROM issue_reports"))).scalar() or 0
+    total = int(db.execute(text("SELECT COUNT(*) FROM issue_reports")).scalar() or 0)
     this_month = int(db.execute(text("""
         SELECT COUNT(*) FROM issue_reports
         WHERE submitted_at >= DATE_TRUNC('month', NOW())
