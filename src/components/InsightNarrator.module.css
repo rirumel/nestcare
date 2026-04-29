@@ -1,0 +1,235 @@
+.wrap {
+  margin-top: 1.25rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 1.25rem;
+}
+
+/* ── Trigger button ── */
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid rgba(200,96,42,0.25);
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: rgba(200,96,42,0.85);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.03em;
+}
+
+.trigger:hover {
+  background: rgba(200,96,42,0.08);
+  border-color: rgba(200,96,42,0.5);
+  color: #c8602a;
+}
+
+.triggerIcon { font-size: 13px; }
+
+.triggerArrow {
+  margin-left: auto;
+  font-size: 9px;
+  opacity: 0.6;
+  transition: transform 0.2s;
+}
+
+/* ── Explanation panel ── */
+.panel {
+  margin-top: 10px;
+  background: rgba(15, 14, 12, 0.7);
+  border: 1px solid rgba(200,96,42,0.18);
+  border-radius: 12px;
+  overflow: hidden;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Loading state ── */
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 18px;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  background: #c8602a;
+  border-radius: 50%;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.2; transform: scale(0.7); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.loadingText {
+  font-size: 13px;
+  color: rgba(255,255,255,0.3);
+  font-style: italic;
+}
+
+/* ── Text area ── */
+.textWrap {
+  padding: 16px 18px 0;
+}
+
+.textLabel {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #c8602a;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.textLabel::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(200,96,42,0.15);
+}
+
+.text {
+  font-size: 14px;
+  line-height: 1.75;
+  color: rgba(255,255,255,0.75);
+  margin: 0;
+  font-style: italic;
+}
+
+/* ── Controls bar ── */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 12px 18px;
+  margin-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.02);
+}
+
+.controlsLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.controlsRight {
+  display: flex;
+  align-items: center;
+}
+
+/* ── Play/Stop button ── */
+.speakBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 32px;
+  height: 32px;
+  background: #c8602a;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.speakBtn:hover { background: #d4703a; transform: scale(1.05); }
+.speakBtnActive { background: #6b3518 !important; }
+
+/* ── Speed pills ── */
+.speedGroup {
+  display: flex;
+  gap: 3px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.speedBtn {
+  padding: 3px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: rgba(255,255,255,0.3);
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.speedBtn:hover { color: rgba(255,255,255,0.7); }
+
+.speedBtnActive {
+  background: rgba(255,255,255,0.1) !important;
+  color: white !important;
+}
+
+/* ── Voice selector ── */
+.voiceSelect {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 6px;
+  color: rgba(255,255,255,0.35);
+  font-size: 10px;
+  font-family: var(--font-body);
+  padding: 4px 8px;
+  cursor: pointer;
+  max-width: 130px;
+  outline: none;
+  transition: all 0.15s;
+}
+
+.voiceSelect:hover {
+  border-color: rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.6);
+}
+
+/* ── Speaking animation ── */
+.speakingWave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+}
+
+.speakingBar {
+  width: 2px;
+  background: #c8602a;
+  border-radius: 1px;
+  animation: wave 0.8s ease-in-out infinite;
+}
+
+.speakingBar:nth-child(1) { height: 8px; animation-delay: 0s; }
+.speakingBar:nth-child(2) { height: 14px; animation-delay: 0.1s; }
+.speakingBar:nth-child(3) { height: 10px; animation-delay: 0.2s; }
+.speakingBar:nth-child(4) { height: 6px; animation-delay: 0.3s; }
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
+  50% { transform: scaleY(1); opacity: 1; }
+}

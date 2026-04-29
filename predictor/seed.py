@@ -129,7 +129,7 @@ def seed():
     cur.execute("DELETE FROM issue_reports WHERE tenant_name != 'Ray Roo'")  # keep real submissions
     conn.commit()
 
-    start_date = datetime.now() - timedelta(days=180)
+    start_date = datetime.now() - timedelta(days=365)
     end_date = datetime.now() - timedelta(days=1)
 
     current_date = start_date
