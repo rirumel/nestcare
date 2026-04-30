@@ -1,7 +1,12 @@
+'use client'
+
 import ReportForm from '@/components/ReportForm'
 import styles from './page.module.css'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function Home() {
+  const { t } = useLanguage()
+
   return (
     <main className={styles.main}>
       <div className={styles.left}>
@@ -17,19 +22,19 @@ export default function Home() {
 
           <div className={styles.heroText}>
             <h1 className={styles.headline}>
-              Something needs<br />
-              <em>fixing?</em>
+              {t.form.headline}<br />
+              <em>{t.form.headlineItalic}</em>
             </h1>
             <p className={styles.tagline}>
-              Tell us what's wrong. We'll notify your property manager instantly and confirm receipt on WhatsApp or email — in seconds.
+              {t.form.tagline}
             </p>
           </div>
 
           <div className={styles.steps}>
             {[
-              { n: '01', label: 'Fill in the form', desc: 'Name, issue and contact' },
-              { n: '02', label: 'Instant confirmation', desc: 'You get notified right away' },
-              { n: '03', label: 'Manager is alerted', desc: 'They receive full details' },
+              { n: '01', label: t.form.step1label, desc: t.form.step1sub },
+              { n: '02', label: t.form.step2label, desc: t.form.step2sub },
+              { n: '03', label: t.form.step3label, desc: t.form.step3sub },
             ].map(s => (
               <div key={s.n} className={styles.step}>
                 <span className={styles.stepNum}>{s.n}</span>

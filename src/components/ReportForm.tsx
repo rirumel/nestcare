@@ -2,23 +2,27 @@
 
 import { useState } from 'react'
 import styles from './ReportForm.module.css'
+import { useLanguage } from '@/context/LanguageContext'
+import ThemeLanguageBar from './ThemeLanguageBar'
 
-const ISSUES = [
-  { id: 'window', label: 'Window', sub: 'Cracked or broken', value: 'Window is damaged', icon: '🪟' },
-  { id: 'stove', label: 'Stove', sub: 'Not functioning', value: 'Stove is not working', icon: '🍳' },
-  { id: 'heating', label: 'Heating', sub: 'No heat or loss', value: 'Heating is not functioning', icon: '🔥' },
-  { id: 'plumbing', label: 'Plumbing', sub: 'Leak or blockage', value: 'Plumbing issue', icon: '🚿' },
-  { id: 'electric', label: 'Electricity', sub: 'Power or wiring', value: 'Electrical issue', icon: '⚡' },
-  { id: 'other', label: 'Other', sub: 'Something else', value: 'Other issue', icon: '🔧' },
+const ISSUES = (t: ReturnType<typeof useLanguage>['t']) => [
+  { id: 'window', label: t.form.issues.window, sub: t.form.issues.windowSub, value: 'Window is damaged', icon: '🪟' },
+  { id: 'stove', label: t.form.issues.stove, sub: t.form.issues.stoveSub, value: 'Stove is not working', icon: '🍳' },
+  { id: 'heating', label: t.form.issues.heating, sub: t.form.issues.heatingSub, value: 'Heating is not functioning', icon: '🔥' },
+  { id: 'plumbing', label: t.form.issues.plumbing, sub: t.form.issues.plumbingSub, value: 'Plumbing issue', icon: '🚿' },
+  { id: 'electric', label: t.form.issues.electricity, sub: t.form.issues.electricitySub, value: 'Electrical issue', icon: '⚡' },
+  { id: 'other', label: t.form.issues.other, sub: t.form.issues.otherSub, value: 'Other issue', icon: '🔧' },
 ]
 
 type ContactType = 'whatsapp' | 'email'
 type Step = 'form' | 'success'
 
 export default function ReportForm() {
+  const { t } = useLanguage()
   const [step, setStep] = useState<Step>('form')
   const [name, setName] = useState('')
   const [selectedIssue, setSelectedIssue] = useState('')
+  const [selectedIssueLabel, setSelectedIssueLabel] = useState('')
   const [description, setDescription] = useState('')
   const [contactType, setContactType] = useState<ContactType>('whatsapp')
   const [contact, setContact] = useState('')
@@ -26,13 +30,15 @@ export default function ReportForm() {
   const [loading, setLoading] = useState(false)
   const [refNumber, setRefNumber] = useState('')
 
+  const issues = ISSUES(t)
+
   function validate() {
     const e: Record<string, string> = {}
-    if (!name.trim()) e.name = 'Please enter your full name'
-    if (!selectedIssue) e.issue = 'Please select an issue category'
-    if (!contact.trim()) e.contact = contactType === 'whatsapp' ? 'Please enter your WhatsApp number' : 'Please enter your email address'
+    if (!name.trim()) e.name = t.form.errors.name
+    if (!selectedIssue) e.issue = t.form.errors.issue
+    if (!contact.trim()) e.contact = contactType === 'whatsapp' ? t.form.errors.contact : t.form.errors.contactEmail
     if (contactType === 'email' && contact && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)) {
-      e.contact = 'Please enter a valid email address'
+      e.contact = t.form.errors.emailInvalid
     }
     setErrors(e)
     return Object.keys(e).length === 0
@@ -53,7 +59,7 @@ export default function ReportForm() {
       setRefNumber(data.refNumber)
       setStep('success')
     } catch (err: unknown) {
-      setErrors({ submit: err instanceof Error ? err.message : 'Failed to send. Please try again.' })
+      setErrors({ submit: err instanceof Error ? err.message : t.form.errors.submit })
     } finally {
       setLoading(false)
     }
@@ -79,31 +85,33 @@ export default function ReportForm() {
             <path d="M5 14.5l6.5 6.5L23 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
-        <h2 className={styles.successTitle}>Got it, {firstName}.</h2>
+        <h2 className={styles.successTitle}>{t.form.successTitle}, {firstName}.</h2>
         <p className={styles.successBody}>
-          Your report about the <strong>{issueLower}</strong> has been received.
-          We've sent a confirmation to your {contactType === 'whatsapp' ? 'WhatsApp' : 'email'} and
-          your property manager has been notified.
+          {t.form.successBody1} <strong>{selectedIssueLabel.toLowerCase()}</strong> has been received.
+          {contactType === 'whatsapp' ? 'WhatsApp' : t.form.email} {t.form.successBody3}
         </p>
         <div className={styles.refPill}>{refNumber}</div>
         <div className={styles.successMeta}>
-          Expected response within 24 hours
+          {t.form.successMeta}
         </div>
-        <button className={styles.resetBtn} onClick={reset}>Submit another report</button>
+        <button className={styles.resetBtn} onClick={reset}>{t.form.submitAnother}</button>
       </div>
     )
   }
 
   return (
     <form className={styles.form} onSubmit={handleSubmit} noValidate>
-      <div className={styles.formHeader}>
-        <h2 className={styles.formTitle}>Report an issue</h2>
-        <p className={styles.formSub}>We'll confirm receipt immediately.</p>
+      <div className={styles.formTopBar}>
+        <div className={styles.formHeader}>
+          <h2 className={styles.formTitle}>{t.form.formTitle}</h2>
+          <p className={styles.formSub}>{t.form.formSub}</p>
+        </div>
+        <ThemeLanguageBar />
       </div>
 
       {/* Name */}
       <div className={styles.field}>
-        <label className={styles.label} htmlFor="name">Your full name</label>
+        <label className={styles.label} htmlFor="name">{t.form.nameLabel}</label>
         <input
           id="name"
           className={`${styles.input} ${errors.name ? styles.inputError : ''}`}
@@ -118,14 +126,14 @@ export default function ReportForm() {
 
       {/* Issue tiles */}
       <div className={styles.field}>
-        <label className={styles.label}>Issue category</label>
+        <label className={styles.label}>{t.form.issueLabel}</label>
         <div className={styles.tiles}>
-          {ISSUES.map(issue => (
+          {issues.map(issue => (
             <button
               key={issue.id}
               type="button"
               className={`${styles.tile} ${selectedIssue === issue.value ? styles.tileSelected : ''}`}
-              onClick={() => { setSelectedIssue(issue.value); setErrors(p => ({ ...p, issue: '' })) }}
+              onClick={() => { setSelectedIssue(issue.value); setSelectedIssueLabel(issue.label); setErrors(p => ({ ...p, issue: '' })) }}
             >
               <span className={styles.tileIcon}>{issue.icon}</span>
               <span className={styles.tileLabel}>{issue.label}</span>
@@ -139,7 +147,7 @@ export default function ReportForm() {
       {/* Description */}
       <div className={styles.field}>
         <label className={styles.label} htmlFor="description">
-          Description <span className={styles.optional}>(optional)</span>
+          {t.form.descriptionLabel} <span className={styles.optional}>{t.form.descriptionOptional}</span>
         </label>
         <textarea
           id="description"
@@ -153,7 +161,7 @@ export default function ReportForm() {
 
       {/* Contact */}
       <div className={styles.field}>
-        <label className={styles.label}>How should we reach you?</label>
+        <label className={styles.label}>{t.form.contactLabel}</label>
         <div className={styles.contactToggle}>
           <button
             type="button"
@@ -164,7 +172,7 @@ export default function ReportForm() {
               <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
               <path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.553 4.124 1.524 5.855L0 24l6.266-1.504A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.369l-.36-.214-3.724.894.936-3.614-.235-.373A9.818 9.818 0 1112 21.818z"/>
             </svg>
-            WhatsApp
+            {t.form.whatsapp}
           </button>
           <button
             type="button"
@@ -174,7 +182,7 @@ export default function ReportForm() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
               <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/>
             </svg>
-            Email
+            {t.form.email}
           </button>
         </div>
         <input
@@ -197,7 +205,7 @@ export default function ReportForm() {
           <span className={styles.spinner} />
         ) : (
           <>
-            Send report
+            {t.form.submitBtn}
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M2 8h12M9 4l5 4-5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -206,7 +214,7 @@ export default function ReportForm() {
       </button>
 
       <p className={styles.privacy}>
-        Your contact details are only used to confirm your report and will not be shared.
+        {t.form.privacy}
       </p>
     </form>
   )

@@ -1,0 +1,59 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.langBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.langBtn:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-surface-3);
+}
+
+.lang {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  transition: color 0.15s;
+}
+
+.langActive {
+  color: var(--accent);
+}
+
+.langDivider {
+  font-size: 10px;
+  color: var(--border-strong);
+}
+
+.themeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.themeBtn:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-surface-3);
+  color: var(--accent);
+}

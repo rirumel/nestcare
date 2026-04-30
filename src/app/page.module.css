@@ -5,12 +5,13 @@
 
 .left {
   flex: 1;
-  background: var(--ink);
+  background: var(--bg-surface);
   padding: 3rem;
   display: flex;
   align-items: center;
   position: relative;
   overflow: hidden;
+  border-right: 1px solid var(--border);
 }
 
 .left::before {
@@ -21,7 +22,7 @@
   width: 400px;
   height: 400px;
   border-radius: 50%;
-  background: rgba(200, 96, 42, 0.12);
+  background: var(--accent-dim);
   pointer-events: none;
 }
 
@@ -33,7 +34,7 @@
   width: 280px;
   height: 280px;
   border-radius: 50%;
-  background: rgba(200, 96, 42, 0.07);
+  background: var(--accent-dim);
   pointer-events: none;
 }
 
@@ -63,13 +64,13 @@
 .brandName {
   font-family: var(--font-display);
   font-size: 20px;
-  color: white;
+  color: var(--text-primary);
   letter-spacing: -0.3px;
 }
 
 .brandName em {
   font-style: italic;
-  color: rgba(255,255,255,0.55);
+  color: var(--text-muted);
 }
 
 .heroText {
@@ -80,7 +81,7 @@
   font-family: var(--font-display);
   font-size: clamp(36px, 4vw, 52px);
   line-height: 1.1;
-  color: white;
+  color: var(--text-primary);
   letter-spacing: -1px;
   margin-bottom: 1.25rem;
 }
@@ -93,7 +94,7 @@
 .tagline {
   font-size: 15px;
   line-height: 1.7;
-  color: rgba(255,255,255,0.5);
+  color: var(--text-secondary);
   max-width: 340px;
 }
 
@@ -121,18 +122,18 @@
 .stepLabel {
   font-size: 14px;
   font-weight: 500;
-  color: rgba(255,255,255,0.85);
+  color: var(--text-primary);
   margin-bottom: 2px;
 }
 
 .stepDesc {
   font-size: 13px;
-  color: rgba(255,255,255,0.38);
+  color: var(--text-muted);
 }
 
 .right {
   flex: 1;
-  background: var(--surface);
+  background: var(--bg-base);
   display: flex;
   align-items: center;
   justify-content: center;
