@@ -3,8 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import styles from './login.module.css'
+import { useLanguage } from '@/context/LanguageContext'
+import ThemeLanguageBar from '@/components/ThemeLanguageBar'
 
 export default function LoginPage() {
+  const { t } = useLanguage()
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -23,36 +26,39 @@ export default function LoginPage() {
       router.push('/dashboard')
       router.refresh()
     } else {
-      setError('Incorrect password. Please try again.')
+      setError(t.login.error)
       setLoading(false)
     }
   }
 
   return (
     <div className={styles.wrap}>
+      <div className={styles.topBar}>
+        <ThemeLanguageBar />
+      </div>
       <div className={styles.card}>
         <div className={styles.icon}>
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
             <path d="M3 18V9L11 4l8 5v9h-6v-5H9v5H3z" fill="white"/>
           </svg>
         </div>
-        <h1 className={styles.title}>NestCare Admin</h1>
-        <p className={styles.sub}>Enter your password to access the dashboard</p>
+        <h1 className={styles.title}>{t.login.title}</h1>
+        <p className={styles.sub}>{t.login.sub}</p>
         <form onSubmit={handleSubmit} className={styles.form}>
           <input
             type="password"
             className={`${styles.input} ${error ? styles.inputError : ''}`}
-            placeholder="Dashboard password"
+            placeholder={t.login.placeholder}
             value={password}
             onChange={e => { setPassword(e.target.value); setError('') }}
             autoFocus
           />
           {error && <p className={styles.error}>{error}</p>}
           <button type="submit" className={styles.btn} disabled={loading || !password}>
-            {loading ? <span className={styles.spinner} /> : 'Access Dashboard →'}
+            {loading ? <span className={styles.spinner} /> : t.login.btn}
           </button>
         </form>
-        <p className={styles.hint}>For demo access, contact the administrator</p>
+        <p className={styles.hint}>{t.login.hint}</p>
       </div>
     </div>
   )
