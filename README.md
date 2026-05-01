@@ -1,65 +1,134 @@
-# 🏠 NestCare — Tenant Issue Reporter
+# 🏠 NestCare — Smart Property Maintenance Platform
 
-A polished Next.js web app where tenants report home maintenance issues. On submission, n8n instantly sends a personalized confirmation via **WhatsApp** (Twilio) or **Email** (Gmail), and notifies the landlord with full details.
+NestCare transforms how tenants report home issues and how landlords manage them — replacing phone calls and paper forms with an intelligent, automated, multilingual platform.
 
 ---
 
-## Tech Stack
+## 🧩 The Problem
+Tenants have no easy way to report home issues. Landlords miss reports, forget to follow up, and have no data to predict what breaks next.
+
+## 💡 The Solution
+A polished web form where tenants submit issues in seconds. The moment they submit, automation kicks in — they get a WhatsApp or email confirmation, the landlord gets alerted, and the data feeds an ML engine that predicts future maintenance needs.
+
+## 📈 The Impact
+- Zero friction for tenants — no app, no account needed
+- Landlords get instant alerts with full context
+- ML forecasts help prevent reactive maintenance
+- Dashboard gives property managers actionable insights at a glance
+
+---
+
+## ✨ Mega Features
+
+**🔄 Workflow Automation (n8n)**
+Every form submission triggers a fully automated pipeline — personalized WhatsApp or email confirmation to the tenant, plus a detailed notification to the landlord. Zero manual work.
+
+**🤖 ML Forecasting & Analytics**
+Anomaly detection (Z-score), next occurrence prediction, trend analysis (linear regression), and seasonal pattern recognition — all computed from real report history.
+
+**🧠 AI Insight Narrator (Claude)**
+Every chart has a "What does this mean?" button. Claude explains the data in plain language and reads it aloud via browser text-to-speech. Works in English and German.
+
+**🌍 Full EN/DE Translation**
+Every page — form, dashboard, login, AI explanations and voice narration — switches instantly between English and German. Preference saved in localStorage.
+
+**🌗 Dark / Light Theme**
+Enterprise-grade theme system built with CSS custom properties. Toggle via moon/sun icon. Preference persisted across sessions with no flash on load.
+
+**📊 Analytics Dashboard**
+Password-protected landlord dashboard with KPI cards, 90-day trend chart, issue distribution donut, seasonal radar, weekly pattern bar chart, predictive maintenance forecast cards, and a paginated reports table.
+
+---
+
+## 🔗 Live Demo
+
+| | URL |
+|---|---|
+| Tenant Form | https://nestcare-five.vercel.app |
+| Landlord Dashboard | https://nestcare-five.vercel.app/dashboard |
+| Dashboard Password | `nestcare2024` |
+| FastAPI Docs | https://nestcare-production.up.railway.app/docs |
+
+> **WhatsApp note:** Uses Twilio sandbox. Send `join fewer-best` to `+1 415 523 8886` on WhatsApp before testing to open a 24-hour session.
+
+---
+
+## 🛠 Tech Stack
 
 | Layer | Tool |
 |---|---|
-| Frontend | Next.js 14 (App Router) + TypeScript |
-| Automation | n8n (self-hosted via Docker) |
+| Frontend | Next.js 14, TypeScript, CSS Modules |
+| Automation | n8n (self-hosted, Hostinger) |
 | WhatsApp | Twilio WhatsApp Sandbox |
 | Email | Gmail via n8n OAuth2 |
-| Hosting | Vercel |
+| ML Service | Python, FastAPI, Scikit-learn, Pandas, NumPy |
+| Database | PostgreSQL |
+| AI Insights | Anthropic Claude API |
+| TTS | Web Speech API (browser-native, free) |
+| Frontend Host | Vercel |
+| ML + DB Host | Railway |
 
 ---
 
-## Local Development Setup
+## 📁 Project Structure
 
-### 1. Install dependencies
+```
+nestcare/
+├── src/
+│   ├── app/
+│   │   ├── page.tsx                   # Tenant form page
+│   │   ├── globals.css                # Theme CSS variables
+│   │   ├── dashboard/                 # Dashboard + login
+│   │   └── api/                       # report, explain, dashboard-auth
+│   ├── components/
+│   │   ├── ReportForm.tsx
+│   │   ├── Dashboard.tsx
+│   │   ├── InsightNarrator.tsx
+│   │   └── ThemeLanguageBar.tsx
+│   ├── context/
+│   │   ├── ThemeContext.tsx
+│   │   └── LanguageContext.tsx
+│   ├── translations/index.ts          # All EN/DE strings
+│   └── lib/api.ts                     # FastAPI client
+├── predictor/
+│   ├── main.py                        # FastAPI endpoints
+│   ├── predictor.py                   # ML logic
+│   ├── models.py                      # DB models
+│   ├── seed.py                        # 365-day data seeder
+│   └── Dockerfile
+└── n8n-workflow-fixed.json
+
+```
+
+---
+
+## ⚙️ Local Setup
 
 ```bash
+# 1. Clone and install
+git clone https://github.com/rirumel/nestcare
+cd nestcare
 npm install
-```
 
-### 2. Configure environment variables
-
-```bash
+# 2. Environment variables
 cp .env.example .env.local
-```
+# Fill in: N8N_WEBHOOK_URL, NEXT_PUBLIC_PREDICTOR_URL,
+#          DASHBOARD_PASSWORD, ANTHROPIC_API_KEY
 
-Edit `.env.local`:
+# 3. Start FastAPI
+cd predictor
+pip3.11 install -r requirements.txt
+python3.11 -m uvicorn main:app --reload --port 8000
 
-```env
-N8N_WEBHOOK_URL=http://localhost:5678/webhook/nestcare-report
-```
+# 4. Seed the database (recommended)
+python3.11 seed.py
 
-> For production on Vercel, replace with your n8n public webhook URL (use ngrok for local testing or n8n's cloud URL).
+# 5. Start n8n
+docker run -it --rm --name n8n -p 5678:5678 \
+  -v ~/.n8n:/home/node/.n8n n8nio/n8n
 
-### 3. Start n8n with Docker
-
-```bash
-docker run -it --rm \
-  --name n8n \
-  -p 5678:5678 \
-  -v ~/.n8n:/home/node/.n8n \
-  n8nio/n8n
-```
-
-Open n8n at http://localhost:5678
-
-### 4. Import the n8n workflow
-
-1. In n8n, go to **Workflows → Import from file**
-2. Select `n8n-workflow.json` from this repo
-3. Configure credentials (see below)
-4. **Activate** the workflow
-
-### 5. Run the dev server
-
-```bash
+# 6. Start Next.js
+cd ..
 npm run dev
 ```
 
@@ -67,125 +136,26 @@ Open http://localhost:3000
 
 ---
 
-## n8n Credentials Setup
+## ⚠️ Known Limitations
 
-### Gmail (for email notifications)
-
-1. In n8n go to **Credentials → New → Gmail OAuth2**
-2. Follow the Google OAuth setup — connect your Gmail account
-3. Both "Send Email" and "Notify Landlord" nodes use this credential
-
-### Twilio (for WhatsApp)
-
-1. Sign up at https://twilio.com (free trial)
-2. Go to **Messaging → Try it out → Send a WhatsApp message**
-3. Note your **Account SID** and **Auth Token**
-4. In n8n go to **Credentials → New → Twilio API**
-5. Enter your Account SID and Auth Token
-
-**Important — Twilio WhatsApp Sandbox opt-in:**
-Each test recipient must send this message to +1 415 523 8886 once:
-```
-join <your-sandbox-keyword>
-```
-Find your keyword at: console.twilio.com → Messaging → Try it out → WhatsApp
-
-### Update the landlord email
-
-In the **"Notify Landlord"** node, replace:
-```
-YOUR_LANDLORD_EMAIL@example.com
-```
-with your actual email address.
+| Limitation | Detail |
+|---|---|
+| Twilio sandbox sessions | Recipients must send `join <keyword>` to the sandbox number every 24 hours to receive WhatsApp messages |
+| Sandbox not for production | Twilio sandbox uses a shared number — upgrade to WhatsApp Business API for 24/7 delivery |
+| Seed data only | ML forecasts are based on generated seed data, not real historical reports |
+| Single property | Current version supports one property/landlord — multi-tenant not yet implemented |
+| No real auth | Dashboard uses a simple password cookie — not suitable for multi-user production use |
 
 ---
 
-## Deploy to Vercel
+## 🔮 Future Plans
 
-### 1. Push to GitHub
-
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-gh repo create nestcare --public --push
-```
-
-### 2. Deploy on Vercel
-
-```bash
-npx vercel
-```
-
-Or connect your GitHub repo at https://vercel.com/new
-
-### 3. Add environment variable on Vercel
-
-In Vercel dashboard → Your project → Settings → Environment Variables:
-
-```
-N8N_WEBHOOK_URL = https://your-n8n-public-url/webhook/nestcare-report
-```
-
-### 4. Make n8n publicly accessible
-
-For local n8n + Vercel frontend, use **ngrok**:
-
-```bash
-ngrok http 5678
-```
-
-Copy the `https://xxxx.ngrok.io` URL and use:
-```
-N8N_WEBHOOK_URL=https://xxxx.ngrok.io/webhook/nestcare-report
-```
-
----
-
-## Project Structure
-
-```
-nestcare/
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx          # Root layout
-│   │   ├── page.tsx            # Main page (split layout)
-│   │   ├── page.module.css     # Page styles
-│   │   ├── globals.css         # Global styles & CSS variables
-│   │   └── api/
-│   │       └── report/
-│   │           └── route.ts    # API route → forwards to n8n
-│   └── components/
-│       ├── ReportForm.tsx      # Form with validation & success state
-│       └── ReportForm.module.css
-├── n8n-workflow.json           # Import this into n8n
-├── .env.example                # Copy to .env.local
-└── README.md
-```
-
----
-
-## Data Flow
-
-```
-Tenant fills form
-      ↓
-Next.js /api/report
-      ↓
-n8n Webhook triggered
-      ↓
-  IF contactType === 'whatsapp'
-  ├── YES → Twilio sends WhatsApp to tenant
-  └── NO  → Gmail sends email to tenant
-      ↓
-Gmail notifies landlord (always)
-```
-
----
-
-## Customisation
-
-- **Add more issue types**: Edit the `ISSUES` array in `ReportForm.tsx`
-- **Change branding**: Update `NestCare` references in `page.tsx` and `layout.tsx`
-- **Add apartment/unit field**: Add an input to the form and include it in the API payload
-- **Slack landlord notification**: Replace the "Notify Landlord" Gmail node with a Slack node
+- [ ] Multi-property and multi-landlord support
+- [ ] Production WhatsApp Business API integration
+- [ ] Tenant portal with report history and status tracking
+- [ ] Push notifications for landlords
+- [ ] Maintenance ticket system with status updates (open → in progress → resolved)
+- [ ] Photo upload for issue reports
+- [ ] SMS fallback when WhatsApp is unavailable
+- [ ] Mobile app (React Native)
+- [ ] GDPR-compliant data export and deletion
